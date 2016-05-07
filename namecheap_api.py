@@ -62,16 +62,19 @@ def get_all_records(conn, domain, ncauth):
     resp = json.loads(resp)
 
     def f(row):
-        return \
+        x = \
             { "host": row["Host"]
             , "data": row["Data"]
             , "host_id": row["HostId"]
             , "record_type": RECORD_TYPE_INTEGERS_REV[row["RecordType"]]
             }
+        if x["record_type"] == "MX":
+            x["mx_priority"] = row["Priority"]
+        return x
 
     return [f(row) for row in resp["Result"]["CustomHostRecords"]["Records"]]
 
-def add_record(conn, domain, ncauth, host, data, record_type, ttl=1799):
+def add_record(conn, domain, ncauth, host, data, record_type, mx_priority=None, ttl=1800):
     data = \
         { "model":
             { "HostId": -1
@@ -83,6 +86,11 @@ def add_record(conn, domain, ncauth, host, data, record_type, ttl=1799):
         , "domainName": domain
         , "isAddNewProcess": True
         }
+
+    if record_type == "MX":
+        if mx_priority is None:
+            raise ValueError("If record type is MX, please provide mx_priority")
+        data["model"]["Priority"] = mx_priority
 
     path = BASE_PATH + "AddOrUpdateHostRecord"
     conn.request("POST", path, json.dumps(data), _make_headers(ncauth=ncauth))
