@@ -7,6 +7,9 @@ import ssl
 import json
 import collections
 
+__all__ = ["get_ncauth_from_user", "RecordType", "connect", 
+           "get_all_records", "add_record", "remove_record", "sync"]
+
 def get_ncauth_from_user():
     text = raw_input("Please provide the .ncauth cookie: ")
     _, _, text = text.rpartition(".ncauth=")
