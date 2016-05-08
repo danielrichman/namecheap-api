@@ -89,7 +89,7 @@ class Record(object):
         return "{:10} {:20} {}".format(self.record_type, self.host, self.data)
 
     def __repr__(self):
-        s = "Record(host={host!r}, data={data!r}, record_type={record_type!r}".format(self.__dict__))
+        s = "Record(host={host!r}, data={data!r}, record_type={record_type!r}".format(self.__dict__)
         if self.mx_priority is not None:
             s += ", mx_priority={!r}".format(self.mx_priority)
         if self.host_id is not None:
