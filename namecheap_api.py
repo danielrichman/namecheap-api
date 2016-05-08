@@ -67,7 +67,7 @@ class RecordType(object):
         return self.int
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.int == self.other.int
+        return isinstance(other, self.__class__) and self.int == other.int
 
     def __repr__(self):
         return self.name
@@ -89,7 +89,7 @@ class Record(object):
         return "{:10} {:20} {}".format(self.record_type, self.host, self.data)
 
     def __repr__(self):
-        s = "Record(host={host!r}, data={data!r}, record_type={record_type!r}".format(self.__dict__)
+        s = "Record(host={host!r}, data={data!r}, record_type={record_type!r}".format(**self.__dict__)
         if self.mx_priority is not None:
             s += ", mx_priority={!r}".format(self.mx_priority)
         if self.host_id is not None:
@@ -99,9 +99,10 @@ class Record(object):
 
     @classmethod
     def of_json(cls, row):
+        record_type = RecordType(row["RecordType"])
+        mx_priority = row["Priority"] if record_type == RecordType("MX") else None
         return cls(host=row["Host"], data=row["Data"], host_id=row["HostId"],
-                   record_type=RecordType(row["RecordType"]),
-                   mx_priority=row["Priority"])
+                   record_type=record_type, mx_priority=mx_priority)
 
     def to_add_request_json(self, ttl=1800):
         if self.host_id is not None:
@@ -159,8 +160,8 @@ def remove_record(conn, domain, ncauth, record):
 class HashableRecordIgnoringHostId(Record):
     @classmethod
     def of_record(cls, rec):
-        cls(host=rec.host, data=rec.data, record_type=rec.record_type,
-            mx_priority=rec.mx_priority, host_id=rec.host_id)
+        return cls(host=rec.host, data=rec.data, record_type=rec.record_type,
+                   mx_priority=rec.mx_priority, host_id=rec.host_id)
 
     def __tuple(self):
         return (self.host, self.data, self.record_type, self.mx_priority)
@@ -168,7 +169,7 @@ class HashableRecordIgnoringHostId(Record):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.__tuple() == other.__tuple()
 
-    def __hash__(self, other):
+    def __hash__(self):
         return hash(self.__tuple())
 
 def sync(conn, domain, ncauth, records, verbose=True):
@@ -176,6 +177,7 @@ def sync(conn, domain, ncauth, records, verbose=True):
     existing_records = set(HashableRecordIgnoringHostId.of_record(x) 
                            for x in get_all_records(conn, domain, ncauth))
 
+    if verbose: print("Syncing", domain)
     for record in records & existing_records:
         if verbose: print("Keeping ", repr(record))
     for record in existing_records - records:
