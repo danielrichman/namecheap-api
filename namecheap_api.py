@@ -34,7 +34,7 @@ def _make_headers(ncauth):
 NAMECHEAP_HOST = "ap.www.namecheap.com"
 BASE_PATH = "/Domains/dns/"
 
-class RecordType(self):
+class RecordType(object):
     DATA_FORWARDS = \
         { "A":      1
         , "CNAME":  2
@@ -146,7 +146,7 @@ def add_record(conn, domain, ncauth, record):
     conn.request("POST", path, json.dumps(data), _make_headers(ncauth=ncauth))
     get_response_and_assert_ok(conn=conn)
 
-def remove_record(conn, domain, ncauth, record)
+def remove_record(conn, domain, ncauth, record):
     data = \
         { "hostId": record.host_id
         , "recordType": record.record_type.int
