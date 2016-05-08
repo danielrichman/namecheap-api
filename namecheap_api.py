@@ -70,7 +70,7 @@ class RecordType(object):
         return isinstance(other, self.__class__) and self.int == other.int
 
     def __repr__(self):
-        return self.name
+        return repr(self.name)
 
 class Record(object):
     def __init__(self, host, data, record_type, mx_priority=None, host_id=None):
