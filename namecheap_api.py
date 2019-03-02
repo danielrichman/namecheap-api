@@ -7,6 +7,8 @@ import ssl
 import json
 import collections
 
+import readline # enhances raw_input to accept very long lines ;-)
+
 __all__ = ["get_ncauth_from_user", "RecordType", "connect", 
            "get_all_records", "add_record", "remove_record", "sync"]
 
